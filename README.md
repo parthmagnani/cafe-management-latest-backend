@@ -4,8 +4,11 @@ Cafe Management Backend is the server-side component of a System developed using
 
 ## Table of Contents
 Features
+
 Technologies Used
+
 Acknowledgements
+
 Future Improvements
 
 ## Features
@@ -26,7 +29,9 @@ Future Improvements
 
 ## Technologies Used
 Node.js
+
 Express
+
 MySQL
 
 ## Acknowledgements
