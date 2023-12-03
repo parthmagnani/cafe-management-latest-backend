@@ -33,7 +33,7 @@ router.get('/get', auth.authenticateToken, checkRole.checkRole, (req, res) => {
 })
 
 // to update name of category
-router.patch('/update', auth.authenticateToken,  (req, res) => {
+router.post('/update', auth.authenticateToken,  (req, res) => {
     let category = req.body
     let query = "update category set name = ? where id = ?"
 
@@ -50,5 +50,22 @@ router.patch('/update', auth.authenticateToken,  (req, res) => {
         }
     })
 })
+
+// to delete category
+router.post('/delete',auth.authenticateToken, (req,res) => {
+    let category = req.body
+    let query = "delete from category where id = ?"
+    connection.query(query, [category.id], (err, results) => {
+
+        if(!err){
+            if(results.affectedRows == 0){
+                return res.status(401).json({status:401, message: "category does not found"})
+            }
+            return res.status(200).json({message: "Category deleted successfully", status: 200})
+        }else{
+            return res.status(500).json(err)
+        }
+    })
+} )
 
 module.exports = router

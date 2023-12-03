@@ -13,23 +13,25 @@ const router = express.Router()
 
 // signup
 router.post('/signup', (req, res) => {
+    console.log("signup called")
     let user = req.body
 
     query = "select email from users where email = ?"
     connection.query(query, [user.email], (err,results) => {
         if(!err){
             if(results.length <= 0){
-                query = "insert into users (name, contactNumber, email, password, status, role) values (?, ?, ?, ?, 'false', 'user')"
+                query = "insert into users (name, contactNumber, email, password, status, role) values (?, ?, ?, ?, false, 'user')"
 
                 connection.query(query, [user.name, user.contactNumber, user.email, user.password], (err, results) => {
                     if(!err){
                         return res.status(200).json({status: 200, message: 'user registerd successfully! wait for admin approval'})
                     }else{
-                        return res.status(500).json({status: 500, message: 'There is something error try after sometime'})
+                        console.log("This is error", err)
+                        return res.status(200).json({status: 500, message: 'There is something error try after sometime'})
                     }
                 })
             }else{
-                return res.status(400).json({status: 400, message: 'Email already exists'})
+                return res.status(200).json({status: 400, message: 'Email already exists'})
             }
         }else{
             return res.status(500).json({status: 500, message: err})
@@ -45,15 +47,15 @@ router.post('/login', (req, res) => {
     connection.query(query, [user.email], (err,results) => {
         if(!err){
             if(results.length <= 0 || results[0].password != user.password){
-                return res.status(401).json({status: 401, message: 'Credentials are not correct!'})
-            }else if(results[0].status == 'false'){
-                return res.status(401).json({status: 401, message:'Wait for admin approval'})
+                return res.status(200).json({status: 401, message: 'Credentials are not correct!'})
+            }else if(results[0].status == false){
+                return res.status(200).json({status: 401, message:'Wait for admin approval'})
             }else if(results[0].password == user.password){
                 const response = {id: results[0].id, email: results[0].email, role: results[0].role }
                 const accessToken = jwt.sign(response, process.env.ACCESS_TOKEN, {expiresIn: '8h'})
                 res.status(200).json({status: 200, message:'login successfully', data: accessToken})
             }else{
-                res.status(401).json({message: 'something went wrong please try again later'})
+                res.status(200).json({message: 'something went wrong please try again later'})
             }
         }else{
             return res.status(500).json({status: 500, message: err})
@@ -121,7 +123,7 @@ router.get('/get', auth.authenticateToken, checkRole.checkRole, (req, res) => {
 })
 
 // approve user to use cafe management by admin
-router.patch('/update', auth.authenticateToken, checkRole.checkRole, (req, res) => {
+router.post('/update', auth.authenticateToken, checkRole.checkRole, (req, res) => {
     let user = req.body
     let query = "update users set status = ? where id = ?"
 

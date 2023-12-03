@@ -75,7 +75,7 @@ router.post("/getById", auth.authenticateToken, (req, res) => {
 });
 
 // to update name of product
-router.patch('/update', auth.authenticateToken,  (req, res) => {
+router.post('/update', auth.authenticateToken,  (req, res) => {
     let product = req.body
     let query = "update product set name = ?, categoryId = ?, description = ?, price = ?  where id = ?"
 
@@ -111,7 +111,7 @@ router.post('/delete', auth.authenticateToken, (req, res) => {
 })
 
 // to change status
-router.patch('/updateStatus', auth.authenticateToken,  (req, res) => {
+router.post('/updateStatus', auth.authenticateToken,  (req, res) => {
     let product = req.body
     let query = "update product set status = ? where id = ?"
 

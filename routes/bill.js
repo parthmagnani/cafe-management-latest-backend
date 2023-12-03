@@ -13,20 +13,17 @@ const router = express.Router()
 
 // generate bill
 router.post('/generateReport', auth.authenticateToken, (req, res) => {
+
     const generatedUuid = uuid.v1()
     const orderDetails = req.body
-    let productDetailsReport = JSON.parse(orderDetails.productDetails)
-    console.log("productDetailsReport-->>", productDetailsReport)
-    let query = `insert into bill
-                (name, uuid, email,contactNumber, paymentMethod,total,productDetails,createdBy)
-                values
-                (?,?,?,?,?,?,?,?)`
+    let productDetailsReport = JSON.stringify(orderDetails.productDetails)
+    let query = "insert into bill (name, uuid, email, contactNumber, paymentMethod, total ,productDetails, createdBy) values (?,?,?,?,?,?,?,?)"
 
-    connection.query(query, [orderDetails.name, generatedUuid, orderDetails.email, orderDetails.contactNumber, orderDetails.paymentMethod, orderDetails.total, orderDetails.productDetails, res.locals.email], (err, results) => {
+    connection.query(query, [orderDetails.name, generatedUuid, orderDetails.email, orderDetails.contactNumber, orderDetails.paymentMethod, orderDetails.total, productDetailsReport, res.locals.email], (err, results) => {
 
         if(!err){
 
-            ejs.renderFile(path.join(__dirname, '', "report.ejs"), { productDetails: productDetailsReport,name:orderDetails.name, email:orderDetails.email, contactNumber:orderDetails.contactNumber, paymentMethod:orderDetails.paymentMethod, total:orderDetails.total }, (err, results) => {
+            ejs.renderFile(path.join(__dirname, '', "report.ejs"), { productDetails: JSON.parse(productDetailsReport),name:orderDetails.name, email:orderDetails.email, contactNumber:orderDetails.contactNumber, paymentMethod:orderDetails.paymentMethod, total:orderDetails.total }, (err, results) => {
 
                 if(err){
                     return res.status(500).json(err)
@@ -36,14 +33,15 @@ router.post('/generateReport', auth.authenticateToken, (req, res) => {
                         if(err){
                             return res.status(500).json(err)
                         }else{
-                            console.log("This is res", fileRes)
-                            return res.status(200).json({status:200, message:generatedUuid })
+                            
+                            return res.status(200).json({status:200, message:"Order placed successfully", data: [{uuid:generatedUuid }] })
                         }
                     })
                 }
             })
 
         }else{
+            
             return res.status(500).json(err)
         }
     })
@@ -56,12 +54,14 @@ router.post('/getpdf', auth.authenticateToken, (req, res) => {
     const pdfPath = './generated_pdf/' + orderDetails.uuid + '.pdf'
 
     if(fs.existsSync(pdfPath)){
+        console.log("UUID already exist and you will get pdf directly")
         res.contentType("application/pdf")
         fs.createReadStream(pdfPath).pipe(res)
     }else{
-        let productDetailsReport = JSON.parse(orderDetails.productDetails)
+        console.log("you are in else condition")
+        let productDetailsReport = JSON.stringify(orderDetails.productDetails)
 
-        ejs.renderFile(path.join(__dirname, '', "report.ejs"), { productDetails: productDetailsReport,name:orderDetails.name, email:orderDetails.email, contactNumber:orderDetails.contactNumber, paymentMethod:orderDetails.paymentMethod, total:orderDetails.total }, (err, results) => {
+        ejs.renderFile(path.join(__dirname, '', "report.ejs"), { productDetails: JSON.parse(productDetailsReport),name:orderDetails.name, email:orderDetails.email, contactNumber:orderDetails.contactNumber, paymentMethod:orderDetails.paymentMethod, total:orderDetails.total }, (err, results) => {
 
             if(err){
                 return res.status(500).json(err)
